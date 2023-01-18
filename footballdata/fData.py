@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import re
+import datetime
 
 class FootballData(object):
 
@@ -58,6 +59,13 @@ class FootballData(object):
                     df = pd.read_csv(os.path.join(self.base_url, data_url), on_bad_lines = 'skip', encoding= 'unicode_escape')
                     print(f'Data Loss on Year {year}')
             df = df.loc[:, self.feature_list]
+            df.dropna(inplace = True)
+            # change the foramt of date
+            if len(df.loc[0, 'Date'].split('/')[-1]) == 4:
+                df['Date'] = df['Date'].apply(lambda x: datetime.datetime.strptime(x, '%d/%m/%Y').strftime("%Y-%m-%d"))
+            else:
+                df['Date'] = df['Date'].apply(lambda x: datetime.datetime.strptime(x, '%d/%m/%y').strftime("%Y-%m-%d"))
+
             league_df = pd.DataFrame([self.league] * df.shape[0], columns = ['League'])
             return pd.concat([league_df, df], axis = 1)
 
